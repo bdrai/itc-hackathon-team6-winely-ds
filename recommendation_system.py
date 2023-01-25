@@ -16,7 +16,16 @@ class RecommendationSystem:
 
     @staticmethod
     def read_data():
-        return pd.read_csv("wine.csv")
+        df = pd.read_csv("winemag-data-130k-v2.csv.zip")
+        df = df.drop(columns=["Unnamed: 0", "designation", "taster_name", "taster_twitter_handle"])
+        df = df.dropna(subset=['country', 'variety'])
+        df = df.drop(columns=["region_2"])
+        df["region_1"] = df["region_1"].fillna("")
+        df["price"] = df["price"].fillna(df["price"].median())
+        df = df.drop_duplicates()\
+            .drop_duplicates(subset=["title"])\
+            .reset_index(drop=True)
+        return df
 
     def write_in_db(self, df):
         engine = create_engine(
