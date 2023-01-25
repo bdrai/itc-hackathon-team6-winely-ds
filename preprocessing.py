@@ -1,6 +1,6 @@
 import pandas as pd
 from sklearn.feature_extraction.text import CountVectorizer
-from sklearn.preprocessing import MinMaxScaler
+from sklearn.preprocessing import MinMaxScaler, StandardScaler
 
 
 def preprocessing(df):
@@ -11,8 +11,8 @@ def preprocessing(df):
     X = vectorizer.fit_transform(df_dummies['description'])
     df_description = pd.DataFrame(X.toarray(), columns=vectorizer.get_feature_names_out(), index=df_dummies.index)
     df_final = df_dummies.join(df_description).drop(columns=["description"])
-    scaler = MinMaxScaler()
-    scaler.fit(df_final[["points", "price"]])
-    df_final[["points", "price"]] = scaler.transform(df_final[["points", "price"]])
+    scaler = StandardScaler()
+    scaler.fit(df_final)
+    df_final = pd.DataFrame(scaler.transform(df_final), columns=df_final.columns)
     return df_final
 
