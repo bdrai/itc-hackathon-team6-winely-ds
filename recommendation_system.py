@@ -3,6 +3,7 @@ from sklearn.neighbors import NearestNeighbors
 from env import Env
 from sqlalchemy import create_engine
 from preprocessing import preprocessing
+import pymysql.cursors
 
 
 class RecommendationSystem:
@@ -11,7 +12,8 @@ class RecommendationSystem:
         self.env = env
         self.df = self.read_data()
         self.df_preprocessed = preprocessing(self.df)
-        self.nearest_neighbors = NearestNeighbors(n_neighbors=n_neighbors, metric=metric, n_jobs=-1).fit(self.df_preprocessed)
+        self.nearest_neighbors = NearestNeighbors(n_neighbors=n_neighbors, metric=metric, n_jobs=-1).fit(
+            self.df_preprocessed)
         self.batch_size = batch_size
 
     @staticmethod
@@ -21,10 +23,20 @@ class RecommendationSystem:
         df = df.dropna(subset=['country', 'variety'])
         df["region_1"] = df["region_1"].fillna("")
         df["price"] = df["price"].fillna(df["price"].median())
-        df = df.drop_duplicates(subset=["title"])\
-            .drop_duplicates()\
+        df = df.drop_duplicates(subset=["title"]) \
+            .drop_duplicates() \
             .reset_index(drop=True)
         return df
+
+    def remove_data_in_db(self):
+        connection = pymysql.connect(host=self.env.HOST_MYSQL,
+                                     user=self.env.USER_MYSQL,
+                                     password=self.env.PWD_MYSQL,
+                                     database=self.env.DB_MYSQL,
+                                     ssl={"fake_flag_to_enable_tls": True})
+        cursor = connection.cursor()
+        cursor.execute("TRUNCATE `similarities`;")
+        cursor.fetchall()
 
     def write_in_db(self, df):
         engine = create_engine(
@@ -61,6 +73,7 @@ class RecommendationSystem:
         return df_similarities
 
     def run(self):
+        self.remove_data_in_db()
         for batch in range(0, len(self.df_preprocessed), self.batch_size):
             print(f"Batch n°{batch}")
             distances, indexes = self.nearest_neighbors.kneighbors(
