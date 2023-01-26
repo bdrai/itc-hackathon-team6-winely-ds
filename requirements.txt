@@ -11,3 +11,4 @@ soupsieve==2.3.2.post1
 SQLAlchemy==1.4.46
 sqlparse==0.4.3
 urllib3==1.26.12
+PyMySQL==1.0.2
