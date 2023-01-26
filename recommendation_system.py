@@ -9,12 +9,9 @@ import pymysql.cursors
 class RecommendationSystem:
     def __init__(self, env: Env, n_neighbors=20, metric="cosine", batch_size=1000):
         self.n_neighbors = n_neighbors
-        print(n_neighbors)
         self.env = env
         self.df = self.read_data()
-        print(self.df)
         self.df_preprocessed = preprocessing(self.df)
-        print(self.df_preprocessed)
         self.nearest_neighbors = NearestNeighbors(n_neighbors=n_neighbors, metric=metric, n_jobs=-1).fit(
             self.df_preprocessed)
         self.batch_size = batch_size
@@ -46,9 +43,10 @@ class RecommendationSystem:
         connection.close()
 
     def write_in_db(self, df):
+        connect_args = {'ssl': {'fake_flag_to_enable_tls': True}}
         engine = create_engine(
             f'mysql+pymysql://{self.env.USER_MYSQL}:{self.env.PWD_MYSQL}@{self.env.HOST_MYSQL}/{self.env.DB_MYSQL}',
-            ssl={"fake_flag_to_enable_tls": True})
+            connect_args=connect_args)
         df.to_sql('similarities', engine, if_exists='append', index=False)
 
     def create_dataframe_similarities(self, indexes):
