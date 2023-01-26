@@ -17,13 +17,12 @@ class RecommendationSystem:
     @staticmethod
     def read_data():
         df = pd.read_csv("winemag-data-130k-v2.csv.zip")
-        df = df.drop(columns=["Unnamed: 0", "designation", "taster_name", "taster_twitter_handle"])
+        df = df.drop(columns=["Unnamed: 0", "designation", "taster_name", "taster_twitter_handle", "region_2"])
         df = df.dropna(subset=['country', 'variety'])
-        df = df.drop(columns=["region_2"])
         df["region_1"] = df["region_1"].fillna("")
         df["price"] = df["price"].fillna(df["price"].median())
-        df = df.drop_duplicates()\
-            .drop_duplicates(subset=["title"])\
+        df = df.drop_duplicates(subset=["title"])\
+            .drop_duplicates()\
             .reset_index(drop=True)
         return df
 
