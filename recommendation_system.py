@@ -29,6 +29,7 @@ class RecommendationSystem:
         return df
 
     def remove_data_in_db(self):
+        print("Truncating data...")
         connection = pymysql.connect(host=self.env.HOST_MYSQL,
                                      user=self.env.USER_MYSQL,
                                      password=self.env.PWD_MYSQL,
@@ -37,6 +38,9 @@ class RecommendationSystem:
         cursor = connection.cursor()
         cursor.execute("TRUNCATE `similarities`;")
         cursor.fetchall()
+        connection.commit()
+        cursor.close()
+        connection.close()
 
     def write_in_db(self, df):
         engine = create_engine(
@@ -76,8 +80,10 @@ class RecommendationSystem:
         self.remove_data_in_db()
         for batch in range(0, len(self.df_preprocessed), self.batch_size):
             print(f"Batch n°{batch}")
+            print("Calculating nearest neighbors...")
             distances, indexes = self.nearest_neighbors.kneighbors(
                 self.df_preprocessed.iloc[batch:batch + self.batch_size],
                 n_neighbors=self.df_preprocessed.shape[0] // 2)
             df_similarities = self.create_dataframe_similarities(indexes)
+            print("Writing data in progress...\n")
             self.write_in_db(df_similarities)

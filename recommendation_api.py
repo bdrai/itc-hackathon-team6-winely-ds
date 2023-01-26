@@ -8,7 +8,7 @@ app = Flask(__name__)
 
 @app.route('/train_model', methods=['POST'])
 def train_model():
-    inputs = json.loads(request.get_json())
+    inputs = request.get_json()
     env = Env()
     rs = RecommendationSystem(env=env, **inputs)
     rs.run()
