@@ -9,9 +9,12 @@ import pymysql.cursors
 class RecommendationSystem:
     def __init__(self, env: Env, n_neighbors=20, metric="cosine", batch_size=1000):
         self.n_neighbors = n_neighbors
+        print(n_neighbors)
         self.env = env
         self.df = self.read_data()
+        print(self.df)
         self.df_preprocessed = preprocessing(self.df)
+        print(self.df_preprocessed)
         self.nearest_neighbors = NearestNeighbors(n_neighbors=n_neighbors, metric=metric, n_jobs=-1).fit(
             self.df_preprocessed)
         self.batch_size = batch_size
